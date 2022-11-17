@@ -1,33 +1,68 @@
-import React from 'react'
-import { Link , withRouter } from 'react-router-dom'
+import React, { Fragment } from 'react'
+import {NavLink, useNavigate } from 'react-router-dom'
+import axios from 'axios';
+import toastr from 'toastr';
+import "toastr/build/toastr.css"
+import { API_URL } from './../config'
+import { isAunthenticated } from './../helpers/Auth'
 
 
-const isActive = (history, path) =>{
-  
-    if(history.location.pathname===path){
-      return {color: '#1E8449'};
-    }
-    else{
-      return {color: '#2E4053'};
-    }
-  }
+
+let activeStyle = {
+    color: '#1E8449'
+};
 
 const Navbar = (props) => {
+
+    const navigate = useNavigate()
+
+    const signout = () => {
+
+        axios.get(`${API_URL}/signout`)
+            .then(() => {
+                toastr.success('Logout succefully !', {
+                    positionClass: "toastr-bottom"
+                })
+
+                localStorage.removeItem('jwt_info')
+                navigate('/signin')
+            })
+            .catch()
+
+
+    }
+
+
     return (
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-                <Link class="navbar-brand" to="/">Navbar</Link>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <div className="container-fluid">
+                <NavLink style={({ isActive }) => isActive ? activeStyle : undefined } className="navbar-brand" to="/">Home</NavLink>
+                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span className="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse " id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <Link style={isActive(props.history, '/signup')} class="nav-link" to='/signup'>Register</Link>
+                <div className="collapse navbar-collapse " id="navbarNav">
+                    <ul className="navbar-nav ms-auto">
+
+                        <li className="nav-item">
+                            <NavLink style={({ isActive }) => isActive ? activeStyle : undefined } className="nav-link" to={`${isAunthenticated() && isAunthenticated().data.user.role === 'admin' ? '/admin' : isAunthenticated() && isAunthenticated().data.user.role === 'livreur' ? '/livreur' : ''}/dashboard`}>Dashboard</NavLink>
                         </li>
-                        <li class="nav-item">
-                            <Link style={isActive(props.history, '/signin')} class="nav-link" to="/signin">Connexion</Link>
-                        </li>
+
+                        {!isAunthenticated() && (
+                            <Fragment>
+                                <li className="nav-item">
+                                    <NavLink style={({ isActive }) => isActive ? activeStyle : undefined }  className="nav-link" to='/signup'>Register</NavLink>
+                                </li>
+                                <li className="nav-item">
+                                    <NavLink style={({ isActive }) => isActive ? activeStyle : undefined }  className="nav-link" to="/signin">Connexion</NavLink>
+                                </li>
+                            </Fragment>
+                        )}
+                        {isAunthenticated() && (
+                            <li className="nav-item">
+                                <NavLink className="nav-link" onClick={signout} >signout</NavLink>
+                            </li>
+                        )}
+
                     </ul>
                 </div>
             </div>
@@ -37,4 +72,4 @@ const Navbar = (props) => {
     )
 }
 
-export default withRouter(Navbar)
+export default Navbar

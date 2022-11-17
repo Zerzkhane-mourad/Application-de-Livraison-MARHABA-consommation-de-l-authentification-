@@ -1,12 +1,13 @@
 import React from "react";
-import Routes from './User/Routes';
+import Routs from './User/Routs';
 
 
 const App = ()=> {
   return (
     <div>
-      <Routes/>
+      <Routs/>
     </div>
+    
 
   );
 }
